@@ -21,22 +21,26 @@ const TESTI = {
         nonAggiornato: "Non riesco ad aggiornare, riprovo…", nonTrovato: "Risultati non disponibili: la pubblicazione è spenta o l'indirizzo è sbagliato.",
         inPista: "In pista", classifica: "Classifica", ordine: "Ordine di partenza", provvisoria: "Classifica provvisoria",
         ritirato: "Ritirato", zero: "0", noScore: "NS", attesa: "in attesa", runOff: "run-off", tieJudge: "Tie Judge",
-        coCampioni: "co-campioni", pattern: "Pattern {0}", giudici: "Giudici: {0}", nessuno: "Ancora nessun punteggio." },
+        coCampioni: "co-campioni", pattern: "Pattern {0}", giudici: "Giudici: {0}", nessuno: "Ancora nessun punteggio.",
+        verifica: "in verifica" },
   en: { inDiretta: "live results", caricamento: "Loading…", aggiornato: "Updated at {0}",
         nonAggiornato: "Can't update, retrying…", nonTrovato: "Results not available: publishing is off or the address is wrong.",
         inPista: "In the arena", classifica: "Results", ordine: "Draw", provvisoria: "Provisional results",
         ritirato: "Scratched", zero: "0", noScore: "NS", attesa: "waiting", runOff: "run-off", tieJudge: "Tie Judge",
-        coCampioni: "co-champions", pattern: "Pattern {0}", giudici: "Judges: {0}", nessuno: "No scores yet." },
+        coCampioni: "co-champions", pattern: "Pattern {0}", giudici: "Judges: {0}", nessuno: "No scores yet.",
+        verifica: "under review" },
   de: { inDiretta: "Live-Ergebnisse", caricamento: "Lädt…", aggiornato: "Aktualisiert um {0}",
         nonAggiornato: "Aktualisierung fehlgeschlagen, neuer Versuch…", nonTrovato: "Ergebnisse nicht verfügbar: Veröffentlichung aus oder falsche Adresse.",
         inPista: "In der Arena", classifica: "Ergebnisliste", ordine: "Startreihenfolge", provvisoria: "Vorläufiges Ergebnis",
         ritirato: "Zurückgezogen", zero: "0", noScore: "NS", attesa: "wartet", runOff: "Stechen", tieJudge: "Tie Judge",
-        coCampioni: "Co-Sieger", pattern: "Pattern {0}", giudici: "Richter: {0}", nessuno: "Noch keine Ergebnisse." },
+        coCampioni: "Co-Sieger", pattern: "Pattern {0}", giudici: "Richter: {0}", nessuno: "Noch keine Ergebnisse.",
+        verifica: "wird geprüft" },
   fr: { inDiretta: "résultats en direct", caricamento: "Chargement…", aggiornato: "Mis à jour à {0}",
         nonAggiornato: "Mise à jour impossible, nouvel essai…", nonTrovato: "Résultats indisponibles : publication désactivée ou adresse erronée.",
         inPista: "En piste", classifica: "Classement", ordine: "Ordre de départ", provvisoria: "Classement provisoire",
         ritirato: "Forfait", zero: "0", noScore: "NS", attesa: "en attente", runOff: "barrage", tieJudge: "Tie Judge",
-        coCampioni: "co-champions", pattern: "Pattern {0}", giudici: "Juges : {0}", nessuno: "Pas encore de score." },
+        coCampioni: "co-champions", pattern: "Pattern {0}", giudici: "Juges : {0}", nessuno: "Pas encore de score.",
+        verifica: "en vérification" },
 };
 const lingua = (navigator.languages || [navigator.language || "en"])
   .map(l => l.slice(0, 2).toLowerCase()).find(l => TESTI[l]) || "en";
@@ -171,7 +175,7 @@ function disegnaGruppo() {
       <tr>
         <td class="posto">${h(r.posto || "--")}</td>
         <td class="testiera">${h(r.testiera)}</td>
-        <td><div class="cavallo">${h(r.cavallo)}${r.nota ? `<span class="nota">${h(t(r.nota))}</span>` : ""}</div>
+        <td><div class="cavallo">${h(r.cavallo)}${r.nota ? `<span class="nota">${h(t(r.nota))}</span>` : ""}${r.verifica ? `<span class="nota">${h(t("verifica"))}</span>` : ""}</div>
             <div class="dettaglio">${h(r.cavaliere)}${r.proprietario ? " · " + h(r.proprietario) : ""}</div>
             ${r.giudici.length > 1 && r.giudici.some(Boolean) ? `<div class="giudici">${r.giudici.map(h).join(" · ")}</div>` : ""}</td>
         ${totale(r)}
@@ -183,7 +187,7 @@ function disegnaGruppo() {
       <tr>
         <td class="testiera">${p.draw}</td>
         <td class="testiera">${h(p.testiera)}</td>
-        <td><div class="cavallo ${p.stato === "ritirato" ? "ritirato" : ""}">${h(p.cavallo)}</div>
+        <td><div class="cavallo ${p.stato === "ritirato" ? "ritirato" : ""}">${h(p.cavallo)}${p.verifica ? `<span class="nota">${h(t("verifica"))}</span>` : ""}</div>
             <div class="dettaglio">${h(p.cavaliere)} · ${h(p.categorie.join(" · "))}</div></td>
         ${totale(p)}
       </tr>`).join("") + "</table></details></div>";
