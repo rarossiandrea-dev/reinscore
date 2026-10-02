@@ -6,11 +6,14 @@
 
 const CONFIGURAZIONE = {
   contenitore: "iCloud.com.andrearossi.ReinScore",
-  // API token «Pagina risultati» della CloudKit Console (Settings › Tokens & Keys), creato il
-  // 2/10/2026. Solo lettura e valido solo da rarossiandrea-dev.github.io: può stare in chiaro.
-  token: "18fb0466bc127d43f69c92fac35047285fb3d06a948dc782836ccceaf97a6cfb",
-  // «development» finché l'app è in prova; «production» quando è sull'App Store.
-  ambiente: "development",
+  // Un API token per ambiente, dalla CloudKit Console (Settings › Tokens & Keys). Solo lettura e
+  // validi solo da rarossiandrea-dev.github.io: possono stare in chiaro.
+  // Si cerca prima nell'ambiente vero (le app dello store), poi in quello di prova (le app
+  // installate da Xcode): così si vedono tutte e due.
+  ambienti: [
+    { nome: "production", token: "2e54114389dc864f1f3a375e9ea09ebb139aceff8b91b2e5c3335bea7ec0f9f3" },
+    { nome: "development", token: "18fb0466bc127d43f69c92fac35047285fb3d06a948dc782836ccceaf97a6cfb" },
+  ],
   ogniSecondi: 15,
 };
 
@@ -70,50 +73,42 @@ async function leggiDemo() {
   return { testata: d.testata, gruppi: d.gruppi };
 }
 
-let database = null;
-function apriCloudKit() {
-  return new Promise((risolvi, rifiuta) => {
-    const avvia = () => {
-      CloudKit.configure({
-        containers: [{
-          containerIdentifier: CONFIGURAZIONE.contenitore,
-          apiTokenAuth: { apiToken: CONFIGURAZIONE.token, persist: false },
-          environment: CONFIGURAZIONE.ambiente,
-        }],
-      });
-      database = CloudKit.getDefaultContainer().publicCloudDatabase;
-      risolvi();
-    };
-    if (window.CloudKit) { avvia(); return; }
-    const s = document.createElement("script");
-    s.src = "https://cdn.apple-cloudkit.com/ck/2/cloudkit.js";
-    s.async = true;
-    s.onerror = rifiuta;
-    window.addEventListener("cloudkitloaded", avvia, { once: true });
-    document.head.appendChild(s);
+// Il servizio web di CloudKit, senza la sua libreria: una richiesta «lookup» per i record.
+async function leggiRecord(ambiente, nomi) {
+  const indirizzo = `https://api.apple-cloudkit.com/database/1/${CONFIGURAZIONE.contenitore}/${ambiente.nome}` +
+    `/public/records/lookup?ckAPIToken=${encodeURIComponent(ambiente.token)}`;
+  const risposta = await fetch(indirizzo, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ records: nomi.map(n => ({ recordName: n })) }),
   });
-}
-
-async function leggiRecord(nomi) {
-  const risposta = await database.fetchRecords(nomi);
-  // «Non trovato» non è un guasto: la pubblicazione è spenta o l'indirizzo è sbagliato.
-  const guasto = (risposta.errors || []).find(e => e.ckErrorCode !== "NOT_FOUND");
-  if (guasto) throw guasto;
+  if (!risposta.ok) throw new Error("CloudKit " + risposta.status);
+  const dati = await risposta.json();
   const fuori = {};
-  for (const r of risposta.records) {
+  for (const r of dati.records || []) {
+    // «Non trovato» non è un guasto: la pubblicazione è spenta o l'indirizzo è sbagliato.
+    if (r.serverErrorCode && r.serverErrorCode !== "NOT_FOUND") throw new Error(r.serverErrorCode);
     if (r.fields && r.fields.json) fuori[r.recordName] = JSON.parse(r.fields.json.value);
   }
   return fuori;
 }
 
+// L'ambiente dove è stata trovata la gara: i giri dopo si legge solo lì.
+let ambienteTrovato = null;
+
 async function leggiCloudKit() {
-  if (!database) await apriCloudKit();
-  const testate = await leggiRecord(["m-" + id]);
-  const testata = testate["m-" + id];
-  if (!testata) return null;
-  const nomi = testata.gruppi.map(g => g.record);
-  const gruppi = nomi.length ? await leggiRecord(nomi) : {};
-  return { testata, gruppi };
+  const ambienti = ambienteTrovato ? [ambienteTrovato]
+    : CONFIGURAZIONE.ambienti.filter(a => a.token && a.token !== "DA_CREARE");
+  for (const ambiente of ambienti) {
+    const testata = (await leggiRecord(ambiente, ["m-" + id]))["m-" + id];
+    if (!testata) continue;
+    ambienteTrovato = ambiente;
+    const nomi = testata.gruppi.map(g => g.record);
+    const gruppi = nomi.length ? await leggiRecord(ambiente, nomi) : {};
+    return { testata, gruppi };
+  }
+  ambienteTrovato = null;
+  return null;
 }
 
 // --- il disegno ---
