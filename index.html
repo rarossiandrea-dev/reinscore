@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ReinScore · Risultati</title>
+<meta name="description" content="Ordini di partenza e classifiche di reining in diretta.">
+<meta name="color-scheme" content="light dark">
+<style>
+  :root {
+    --sfondo: #f2f2f7; --carta: #ffffff; --testo: #1c1c1e; --tenue: #6e6e73; --linea: #e5e5ea;
+    --accento: #d9822b; --accento-tenue: #fdf0e3; --verde: #1a7f40; --rosso: #c0392b;
+    --raggio: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --sfondo: #000000; --carta: #1c1c1e; --testo: #f2f2f7; --tenue: #98989f; --linea: #2c2c2e;
+            --accento: #f0a04b; --accento-tenue: #3a2a18; --verde: #4cc27a; --rosso: #ff6b5b; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--sfondo); color: var(--testo);
+         font: 16px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width: 860px; margin: 0 auto; padding: 16px 16px 48px; }
+  header { padding: 8px 0 12px; }
+  .marchio { font-size: 13px; color: var(--tenue); letter-spacing: .02em; }
+  h1 { font-size: 26px; margin: 4px 0 2px; line-height: 1.2; }
+  .sotto { color: var(--tenue); font-size: 15px; }
+  .aggiornato { font-size: 13px; color: var(--tenue); margin-top: 6px; display: flex; align-items: center; gap: 6px; }
+  .punto { width: 8px; height: 8px; border-radius: 50%; background: var(--verde); display: inline-block; }
+  .punto.fermo { background: var(--rosso); }
+  .scelte { display: flex; gap: 8px; overflow-x: auto; padding: 6px 0 10px; scrollbar-width: none; }
+  .scelte::-webkit-scrollbar { display: none; }
+  .scelta { border: 1px solid var(--linea); background: var(--carta); color: var(--testo); border-radius: 999px;
+            padding: 7px 14px; font: inherit; font-size: 14px; white-space: nowrap; cursor: pointer; }
+  .scelta.attiva { background: var(--accento); border-color: var(--accento); color: #fff; }
+  .carta { background: var(--carta); border-radius: var(--raggio); padding: 14px 16px; margin: 10px 0; }
+  .titolo-carta { font-size: 13px; text-transform: uppercase; letter-spacing: .04em; color: var(--tenue); margin-bottom: 8px; }
+  .pista { display: flex; align-items: baseline; gap: 14px; background: var(--accento-tenue); }
+  .pista .num { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .pista .chi strong { display: block; font-size: 18px; }
+  .pista .chi span { color: var(--tenue); }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 9px 4px; border-top: 1px solid var(--linea); vertical-align: top; }
+  tr:first-child td { border-top: none; }
+  .posto { width: 34px; font-weight: 800; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .testiera { width: 46px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+  .cavallo { font-weight: 600; }
+  .dettaglio { font-size: 13px; color: var(--tenue); }
+  .giudici { font-size: 13px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+  .totale { text-align: right; font-weight: 800; font-size: 18px; color: var(--accento); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .totale.spento { color: var(--tenue); font-weight: 600; font-size: 15px; }
+  .nota { display: inline-block; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--accento-tenue); color: var(--accento); margin-left: 4px; }
+  .avviso { font-size: 13px; color: var(--rosso); margin: 2px 0 8px; }
+  details summary { cursor: pointer; font-weight: 600; list-style: none; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: " ›"; color: var(--tenue); }
+  details[open] summary::after { content: " ⌄"; }
+  .ritirato { text-decoration: line-through; color: var(--tenue); }
+  .vuoto { text-align: center; color: var(--tenue); padding: 40px 16px; }
+  footer { text-align: center; color: var(--tenue); font-size: 12px; margin-top: 28px; }
+  @media (min-width: 640px) { h1 { font-size: 32px; } .pista .num { font-size: 52px; } }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="marchio">ReinScore · <span data-t="inDiretta"></span></div>
+    <h1 id="nome">…</h1>
+    <div class="sotto" id="luogo"></div>
+    <div class="aggiornato"><span class="punto" id="punto"></span><span id="aggiornato"></span></div>
+  </header>
+  <nav class="scelte" id="gruppi"></nav>
+  <section id="contenuto"><div class="vuoto" data-t="caricamento"></div></section>
+  <footer>ReinScore</footer>
+</main>
+<script src="risultati.js"></script>
+</body>
+</html>
