@@ -92,7 +92,9 @@ function apriCloudKit() {
 
 async function leggiRecord(nomi) {
   const risposta = await database.fetchRecords(nomi);
-  if (risposta.hasErrors && risposta.records.length === 0) throw risposta.errors[0];
+  // «Non trovato» non è un guasto: la pubblicazione è spenta o l'indirizzo è sbagliato.
+  const guasto = (risposta.errors || []).find(e => e.ckErrorCode !== "NOT_FOUND");
+  if (guasto) throw guasto;
   const fuori = {};
   for (const r of risposta.records) {
     if (r.fields && r.fields.json) fuori[r.recordName] = JSON.parse(r.fields.json.value);
